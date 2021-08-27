@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    entrypoint: dockerize -wait tcp://db:1433 -timeout 40s ./.docker/entrypoint.sh
+    container_name: solucoes_reurb_api
+    ports:
+      - 3001:3001
+    volumes:
+      - .:/home/node/app
+    depends_on: 
+      - db
+    extra_hosts: 
+        - 'host.docker.internal:172.17.0.1'
+
+  db:
+    build: .docker/mssql
+    container_name: solucoes_reurb_db
+    restart: always
+    ports:
+      - 1433:1433
+    tty: true
+    volumes:
+      - ./.docker/dbdata:/var/opt/mssql/data
+      - ./.docker/mssql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - SA_PASSWORD=admin*123
+      - ACCEPT_EULA=Y
+
+
